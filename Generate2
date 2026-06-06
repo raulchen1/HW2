@@ -1,0 +1,210 @@
+"""
+Generation module for Homework 2.
+Defines functions to use a trained NGramModel generatively:
+- generate_one: sample a single sentence (sentence mode) or word
+  (word mode) from a trained model.
+- demonstrate: print a short report for a single model -- its string
+  representation, five generated items, and the raw and LaPlace-smoothed
+  perplexity of six fixed test items.
+When run as a script, builds and demonstrates one model whose training
+data, n, mode, and tokenizer are chosen on the command line.
+"""
+import argparse
+import os
+import random
+from Corpusreader import Tokenizer, TokenizerNLTK, CorpusReader
+from model import NGramModel, START, END
+# Fix the random seed so generated output is reproducible across runs.
+# (Handy for debugging and for the report.)
+random.seed(42)
+# ---------------------------------------------------------------------------
+# Fixed test items from the assignment
+# ---------------------------------------------------------------------------
+TEST_WORDS = ["swicky", "these", "devils", "foonch", "FAQ", "isn't"]
+TEST_SENTENCES = [
+    "\"Don't make too much noise,\" said Father Brown.",
+    "Don't go there!",
+    "Father Brown laughed.",
+    "make noise too much don't Father said Brown.",
+    "The men left.",
+    "The swicky men left.",
+]
+print("RUNNING GENERATE.PY")
+# ---------------------------------------------------------------------------
+# Generation
+# ---------------------------------------------------------------------------
+def generate_one(model, max_length=100):
+    """
+    Generate a single item (sentence or word) from a trained NGramModel.
+    Starts from n-1 START tokens, then at each step looks up the
+    successors of the current prefix and samples one weighted by its
+    observed count. Stops when END is sampled, or when max_length real
+    atoms have been produced (a safety net against runaway loops if a
+    prefix somehow has no END in its successors).
+    @param model: NGramModel: the trained model to sample from.
+    @param max_length: int: hard cap on generated atoms (excluding
+        START/END padding) to avoid infinite loops on pathological
+        prefixes. Defaults to 100.
+    @return: list[str] in sentence mode, str in word mode. The
+        START and END tokens are stripped before returning.
+    """
+    # Seed the generation with n-1 START tokens, matching the padding
+    # used during training in NGramModel.preprocess.
+    generated = [START] * (model.n - 1)
+    while len(generated) - (model.n - 1) < max_length:
+        # The current prefix is the last n-1 tokens of what we have so far.
+        prefix_tokens = generated[-(model.n - 1):] if model.n > 1 else []
+        successors = model.get_successors(prefix_tokens)
+        if not successors:
+            # Dead end: this prefix was never seen, so we can't continue.
+            # End the item here rather than crash.
+            break
+        choices, counts = zip(*successors)
+        next_token = random.choices(choices, weights=counts, k=1)[0]
+        if next_token == END:
+            break
+        generated.append(next_token)
+    # Strip the START padding; END was never appended.
+    real_atoms = generated[model.n - 1:]
+    if model.mode == "word":
+        # In word mode the atoms are characters; join into a string.
+        return "".join(real_atoms)
+    return real_atoms
+# ---------------------------------------------------------------------------
+# Demonstration
+# ---------------------------------------------------------------------------
+def _format_item(item):
+    """
+    Render a generated item nicely for printing.
+    Sentence-mode items come back as token lists, which we join with
+    spaces. Word-mode items are already strings.
+    @param item: list[str] or str
+    @return: str
+    """
+    if isinstance(item, list):
+        return " ".join(item)
+    return item
+def demonstrate(model):
+    """
+    Print a short report for a single trained NGramModel.
+    Sections:
+      1. The model's string representation (via __str__).
+      2. Five items generated with generate_one.
+      3. Raw and LaPlace-smoothed (k=1) perplexity of the six fixed
+         test items appropriate to the model's mode. Each test item is
+         treated as its own corpus by passing it through the model's
+         corpus_perplexity method -- this matters for items like
+         "isn't" or sentences with internal punctuation that the
+         tokenizer may split into multiple sub-items.
+    @param model: NGramModel: a fully-initialised model to demonstrate.
+    @return: None. Output goes to stdout.
+    """
+    # --- 1. Header ---
+    print(model)
+    # --- 2. Generated items ---
+    print("\nGenerated items:")
+    for _ in range(5):
+        item = generate_one(model)
+        print(f"  {_format_item(item)}")
+    # --- 3. Perplexities on the fixed test items ---
+    test_items = TEST_WORDS if model.mode == "word" else TEST_SENTENCES
+    print("\n----------------")
+    print("Perplexities:")
+    for test_item in test_items:
+        # corpus_perplexity returns a list (one perplexity per
+        # sub-item the tokenizer produced). We report each one.
+        raw = model.corpus_perplexity(test_item, smoothing_constant=0)
+        smoothed = model.corpus_perplexity(test_item, smoothing_constant=1)
+        print(f"  {test_item!r}")
+        # Most items produce a single sub-item; some (e.g. "isn't" in
+        # sentence mode, or a multi-sentence test) produce several.
+        if len(raw) == 1:
+            print(f"    Raw:      {raw[0]:.4f}")
+            print(f"    Smoothed: {smoothed[0]:.4f}")
+        else:
+            for i, (r, s) in enumerate(zip(raw, smoothed)):
+                print(f"    sub-item {i}: Raw {r:.4f}   Smoothed {s:.4f}")
+    print("----------------\n")
+# ---------------------------------------------------------------------------
+# CLI
+# ---------------------------------------------------------------------------
+def _build_tokenizer(name):
+    """
+    Map a CLI tokenizer name to an instantiated tokenizer object.
+    @param name: str: "plain" or "nltk".
+    @return: Tokenizer or TokenizerNLTK
+    @raises ValueError: if the name is not recognised.
+    """
+    if name == "plain":
+        return Tokenizer()
+    if name == "nltk":
+        return TokenizerNLTK()
+    raise ValueError(f"Unknown tokenizer {name!r}; use 'plain' or 'nltk'.")
+def _load_data(corpus_path, tokenizer, mode):
+    """
+    Load training data from a directory of text files using a
+    CorpusReader, and return it in the shape expected by NGramModel
+    for the given mode.
+    @param corpus_path: str: path to a directory of text files.
+    @param tokenizer: Tokenizer: tokenizer used by the CorpusReader.
+    @param mode: str: "sentence" or "word".
+    @return: list of items suitable for NGramModel's data argument.
+    """
+    reader = CorpusReader(corpus_path, tokenizer)
+    if mode == "sentence":
+        return reader.sents()
+    return reader.words()
+def _parse_args():
+    """
+    Build and parse the command-line interface for the script.
+    @return: argparse.Namespace with attributes corpus, n, mode, tokenizer.
+    """
+    parser = argparse.ArgumentParser(
+        description=(
+            "Train an n-gram model on a directory of text files and "
+            "demonstrate it: print the model summary, generate five "
+            "items, and report raw and smoothed perplexity on a fixed "
+            "set of test items."
+        ),
+    )
+    parser.add_argument(
+        "--corpus", "-c",
+        default="train",
+        help="Path to a directory of training files (default: 'train').",
+    )
+    parser.add_argument(
+        "--n", "-n",
+        type=int,
+        default=3,
+        help="Size of the n-grams (default: 3).",
+    )
+    parser.add_argument(
+        "--mode", "-m",
+        choices=("sentence", "word"),
+        default="sentence",
+        help="Model mode: 'sentence' (atoms are words) or 'word' "
+             "(atoms are characters). Default: sentence.",
+    )
+    parser.add_argument(
+        "--tokenizer", "-t",
+        choices=("plain", "nltk"),
+        default="plain",
+        help="Which tokenizer to use (default: plain).",
+    )
+    return parser.parse_args()
+if __name__ == "__main__":
+    args = _parse_args()
+    if not os.path.isdir(args.corpus):
+        raise SystemExit(
+            f"Corpus directory not found: {args.corpus!r}. "
+            f"Pass --corpus to point at a real directory of text files."
+        )
+    tokenizer = _build_tokenizer(args.tokenizer)
+    data = _load_data(args.corpus, tokenizer, args.mode)
+    print(
+        f"Training {args.n}-gram {args.mode} model on {args.corpus!r} "
+        f"using the {args.tokenizer} tokenizer..."
+    )
+    model = NGramModel(data, n=args.n, tokenizer=tokenizer, mode=args.mode)
+    demonstrate(model)
+    print("SUCCESFULLY RUNNED GENERATE.PY")
