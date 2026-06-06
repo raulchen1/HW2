@@ -1,196 +1,370 @@
+"""
+model.py
+
+Contains the NGramModel class for building n-gram language models,
+calculating probabilities and perplexities, and supporting text
+generation.
+"""
 
 import math
 from collections import defaultdict
 from Corpusreader import Tokenizer
-# Global start and end tokens. Used to pad items so that the first
-# real token has a prefix and the last token has a successor.
+
 START = "<s>"
 END = "</s>"
-print("MODEL.PY")
+
 class NGramModel:
+"""
+An n-gram language model that can operate on sentences or words.
 
-    def __init__(self, data, n, tokenizer: Tokenizer, mode="sentence"):
+```
+In sentence mode, words are treated as atoms. In word mode,
+characters are treated as atoms.
+"""
 
-        if mode not in ("sentence", "word"):
-            raise ValueError(
-                f"mode must be 'sentence' or 'word', got {mode!r}"
-            )
-        self.mode = mode
-        self.n = n
-        self.tokenizer = tokenizer
-        # Build the ngram table by sweeping through every item in the
-        # training data. We use defaultdict to keep the counting code
-        # short, then convert back to a plain dict at the end so that
-        # missing-key lookups stay safe (no accidental insertions).
-        table = defaultdict(lambda: defaultdict(int))
-        successors = set()
-        for item in data:
-            clean = self.preprocess(item)
-            # For an item of length L (after padding), there are
-            # L - n + 1 ngrams of size n.
-            for i in range(len(clean) - n + 1):
-                prefix_tokens = clean[i:i + n - 1]
-                successor = clean[i + n - 1]
-                prefix = self.hashable_prefix(prefix_tokens)
-                table[prefix][successor] += 1
-                successors.add(successor)
-        # Freeze into ordinary dicts so future lookups don't mutate.
-        self.ngram_table = {
-            prefix: dict(succ_counts)
-            for prefix, succ_counts in table.items()
-        }
-        self.successors = successors
-        self.V = len(self.successors)
-    # PROVIDED
-    def __str__(self):
- 
-        ret = "-------------------"
-        ret += f"\n{self.n}-gram model for {self.mode}s"
-        ret += f"\nTokenizer class: {type(self.tokenizer).__name__}"
-        ret += f"\nV = {self.V}"
-        ret += f"\nNumber of prefixes: {len(self.ngram_table)}"
-        ret += "\n-------------------"
-        return ret
-    # OPTIONAL
-    def get_ith_ngram(self, clean_item, i):
+def __init__(self, data, n, tokenizer: Tokenizer, mode="sentence"):
+    """
+    Initialise an n-gram model from training data.
 
-        prefix_sublist = clean_item[i:i + self.n - 1]
-        prefix = self.hashable_prefix(prefix_sublist)
-        successor = clean_item[i + self.n - 1]
-        return prefix, successor
-    # OPTIONAL
-    def number_of_ngrams(self, clean_item):
+    Args:
+        data: Training data from CorpusReader.sents() or
+            CorpusReader.words().
+        n: Size of the n-grams.
+        tokenizer: Tokenizer used with this model.
+        mode: Either "sentence" or "word".
 
-        return max(0, len(clean_item) - self.n + 1)
-    # REQUIRED
-    def preprocess(self, item):
+    Raises:
+        ValueError: If mode is not "sentence" or "word".
+    """
+    if mode not in ("sentence", "word"):
+        raise ValueError(
+            f"mode must be 'sentence' or 'word', got {mode!r}"
+        )
 
-        if self.mode == "word":
-            # In word mode, an "item" is one word; split into chars.
-            atoms = list(item)
-        else:
-            # In sentence mode, an "item" is already a list of words.
-            atoms = list(item)
-        # Lowercase everything so "The" and "the" are the same atom.
-        atoms = [a.lower() for a in atoms]
-        # Pad with n-1 START tokens and a single END token.
-        return [START] * (self.n - 1) + atoms + [END]
-    # REQUIRED
-    def probability(self, prefix, w_n, smoothing_constant=0):
+    self.mode = mode
+    self.n = n
+    self.tokenizer = tokenizer
 
-        prefix = self.hashable_prefix(prefix)
-        # Unknown successor: not in the vocabulary at all.
-        if w_n not in self.successors:
-            return 0.0
-        # Unknown prefix: never seen during training.
-        if prefix not in self.ngram_table:
-            return 0.0
-        successor_counts = self.ngram_table[prefix]
-        prefix_total = sum(successor_counts.values())
-        successor_count = successor_counts.get(w_n, 0)
-        if smoothing_constant > 0:
-            numerator = successor_count + smoothing_constant
-            denominator = prefix_total + smoothing_constant * self.V
-            return numerator / denominator
-        # No smoothing.
-        if prefix_total == 0:
-            return 0.0
-        return successor_count / prefix_total
-    # REQUIRED
-    def corpus_perplexity(self, corpus: str, smoothing_constant=0):
+    # Count all observed n-grams in the training data.
+    table = defaultdict(lambda: defaultdict(int))
+    successors = set()
 
-        if self.mode == "sentence":
-            items = self.tokenizer.string2sentences(corpus)
-        else:
-            items = self.tokenizer.word_tokenize(corpus)
-        return [self.perplexity(item, smoothing_constant) for item in items]
-    # REQUIRED
-    def perplexity(self, item, smoothing_constant=0):
-
+    for item in data:
         clean = self.preprocess(item)
-        num_ngrams = self.number_of_ngrams(clean)
-        # An empty item (no real atoms, just padding) has no ngrams to
-        # score; return infinity to flag it rather than dividing by 0.
-        if num_ngrams <= 0:
-            return math.inf
-        log_prob_sum = 0.0
-        for i in range(num_ngrams):
-            prefix, successor = self.get_ith_ngram(clean, i)
-            p = self.probability(prefix, successor, smoothing_constant)
-            if p <= 0:
-                # One zero-probability ngram makes the whole product
-                # zero, hence perplexity = infinity.
-                return math.inf
-            log_prob_sum += math.log(p)
-        # Average log probability per ngram, then exponentiate the
-        # negative to get perplexity.
-        avg_log_prob = log_prob_sum / num_ngrams
-        return math.exp(-avg_log_prob)
-    # REQUIRED
-    def get_successors(self, prefix):
 
-        prefix = self.hashable_prefix(prefix)
-        if prefix not in self.ngram_table:
-            return []
-        successor_count_pairs = list(self.ngram_table[prefix].items())
-        return sorted(successor_count_pairs, key=lambda x: x[1], reverse=True)
-    # PROVIDED
-    def hashable_prefix(self, prefix):
+        for i in range(len(clean) - n + 1):
+            prefix_tokens = clean[i:i + n - 1]
+            successor = clean[i + n - 1]
 
-        if self.n == 2:
-            if (isinstance(prefix, list) or isinstance(prefix, tuple)) and len(prefix) == 1:
-                return prefix[0]
-            elif isinstance(prefix, str):
-                return prefix
-            else:
-                print(prefix, type(prefix))
-                raise ValueError("Are you sure you've got a bigram?")
-        else:
-            return tuple(prefix)
-    # PROVIDED
-    def print_successors(self, prefix, k=None):
+            prefix = self.hashable_prefix(prefix_tokens)
 
-        if self.n < 3:
-            print(prefix, ":")
-        else:
-            print(" ".join(prefix), ":")
-        to_print = self.get_successors(prefix)
-        if k is not None:
-            print(f"Top {k} successors:")
-            to_print = to_print[:k]
-        for successor, count in to_print:
-            print(f"\t{successor} -- {count}")
-    # PROVIDED
-    def print_model(self, k=None):
+            table[prefix][successor] += 1
+            successors.add(successor)
 
-        print("-----------------------")
-        print(f"Model {self.n}-grams:\n")
-        for prefix in self.ngram_table:
-            self.print_successors(prefix, k)
-        print("------------------------")
-        print("Statistics")
-        print(f"n = {self.n}")
-        print("V =", self.V)
-        print("Number of prefixes: ", len(self.ngram_table))
-        print("------------------------")
-if __name__ == "__main__":
-    # Quick smoke test on a toy corpus. Not graded.
-    from Corpusreader import Tokenizer
-    toy = "\"Hi !there friend!\" !??? Can't you help me? There aren't so many..."
-    tok = Tokenizer()
-    sents = tok.string2sentences(toy)
-    gold_sents = [
-        ['Hi', 'there', 'friend'],
-        ["Can't", 'you', 'help', 'me'],
-        ['There', "aren't", 'so', 'many'],
+    self.ngram_table = {
+        prefix: dict(succ_counts)
+        for prefix, succ_counts in table.items()
+    }
+
+    self.successors = successors
+    self.V = len(self.successors)
+
+def __str__(self):
+    """
+    Return a summary of the model.
+
+    Returns:
+        A formatted string containing model statistics.
+    """
+    ret = "-------------------"
+    ret += f"\n{self.n}-gram model for {self.mode}s"
+    ret += f"\nTokenizer class: {type(self.tokenizer).__name__}"
+    ret += f"\nV = {self.V}"
+    ret += f"\nNumber of prefixes: {len(self.ngram_table)}"
+    ret += "\n-------------------"
+    return ret
+
+def get_ith_ngram(self, clean_item, i):
+    """
+    Return the i-th n-gram from a preprocessed item.
+
+    Args:
+        clean_item: A preprocessed sentence or word.
+        i: Starting index of the n-gram.
+
+    Returns:
+        A tuple containing the prefix and successor.
+    """
+    prefix_sublist = clean_item[i:i + self.n - 1]
+    prefix = self.hashable_prefix(prefix_sublist)
+    successor = clean_item[i + self.n - 1]
+
+    return prefix, successor
+
+def number_of_ngrams(self, clean_item):
+    """
+    Calculate the number of n-grams in a processed item.
+
+    Args:
+        clean_item: A preprocessed sentence or word.
+
+    Returns:
+        The number of extractable n-grams.
+    """
+    return max(0, len(clean_item) - self.n + 1)
+
+def preprocess(self, item):
+    """
+    Preprocess a sentence or word before modelling.
+
+    Converts tokens to lowercase and adds the required
+    START and END markers.
+
+    Args:
+        item: A sentence or word.
+
+    Returns:
+        A list of strings representing the processed item.
+    """
+    if self.mode == "word":
+        atoms = list(item)
+    else:
+        atoms = list(item)
+
+    atoms = [a.lower() for a in atoms]
+
+    return [START] * (self.n - 1) + atoms + [END]
+
+def probability(self, prefix, w_n, smoothing_constant=0):
+    """
+    Calculate the probability of a successor given a prefix.
+
+    Optionally applies Laplace smoothing.
+
+    Args:
+        prefix: Prefix of the n-gram.
+        w_n: Candidate successor.
+        smoothing_constant: Laplace smoothing parameter.
+
+    Returns:
+        The probability of w_n following prefix.
+    """
+    prefix = self.hashable_prefix(prefix)
+
+    if w_n not in self.successors:
+        return 0.0
+
+    if prefix not in self.ngram_table:
+        return 0.0
+
+    successor_counts = self.ngram_table[prefix]
+    prefix_total = sum(successor_counts.values())
+    successor_count = successor_counts.get(w_n, 0)
+
+    if smoothing_constant > 0:
+        numerator = successor_count + smoothing_constant
+        denominator = prefix_total + smoothing_constant * self.V
+        return numerator / denominator
+
+    if prefix_total == 0:
+        return 0.0
+
+    return successor_count / prefix_total
+
+def corpus_perplexity(self, corpus: str, smoothing_constant=0):
+    """
+    Calculate the perplexity of every item in a corpus.
+
+    Args:
+        corpus: Raw corpus text.
+        smoothing_constant: Laplace smoothing parameter.
+
+    Returns:
+        A list of perplexity values.
+    """
+    if self.mode == "sentence":
+        items = self.tokenizer.string2sentences(corpus)
+    else:
+        items = self.tokenizer.word_tokenize(corpus)
+
+    return [
+        self.perplexity(item, smoothing_constant)
+        for item in items
     ]
-    print("string2sentences matches gold:", sents == gold_sents)
-    model = NGramModel(sents, 4, tok)
-    model.print_model()
-    test_sentence = "Hi there, friend"
-    test_tokens = tok.word_tokenize(test_sentence)
-    print("Perplexity (smoothed k=1):",
-          model.perplexity(test_tokens, 1))
-    # Demonstrate corpus_perplexity on the same toy text.
-    print("Corpus perplexity per sentence (k=1):",
-          model.corpus_perplexity(toy, 1))
+
+def perplexity(self, item, smoothing_constant=0):
+    """
+    Calculate the perplexity of a sentence or word.
+
+    Args:
+        item: Sentence or word to evaluate.
+        smoothing_constant: Laplace smoothing parameter.
+
+    Returns:
+        The perplexity value, or math.inf if a zero-probability
+        n-gram is encountered.
+    """
+    clean = self.preprocess(item)
+    num_ngrams = self.number_of_ngrams(clean)
+
+    if num_ngrams <= 0:
+        return math.inf
+
+    log_prob_sum = 0.0
+
+    for i in range(num_ngrams):
+        prefix, successor = self.get_ith_ngram(clean, i)
+
+        p = self.probability(
+            prefix,
+            successor,
+            smoothing_constant
+        )
+
+        if p <= 0:
+            return math.inf
+
+        log_prob_sum += math.log(p)
+
+    avg_log_prob = log_prob_sum / num_ngrams
+
+    return math.exp(-avg_log_prob)
+
+def get_successors(self, prefix):
+    """
+    Retrieve all successors for a prefix.
+
+    Args:
+        prefix: Prefix whose successors are requested.
+
+    Returns:
+        A list of (successor, count) pairs sorted by frequency.
+    """
+    prefix = self.hashable_prefix(prefix)
+
+    if prefix not in self.ngram_table:
+        return []
+
+    successor_count_pairs = list(
+        self.ngram_table[prefix].items()
+    )
+
+    return sorted(
+        successor_count_pairs,
+        key=lambda x: x[1],
+        reverse=True
+    )
+
+def hashable_prefix(self, prefix):
+    """
+    Convert a prefix into a hashable form for dictionary lookup.
+
+    Args:
+        prefix: Prefix represented as a list, tuple or string.
+
+    Returns:
+        A hashable representation of the prefix.
+
+    Raises:
+        ValueError: If a bigram prefix has an unexpected format.
+    """
+    if self.n == 2:
+        if (
+            isinstance(prefix, (list, tuple))
+            and len(prefix) == 1
+        ):
+            return prefix[0]
+
+        elif isinstance(prefix, str):
+            return prefix
+
+        else:
+            print(prefix, type(prefix))
+            raise ValueError(
+                "Are you sure you've got a bigram?"
+            )
+
+    return tuple(prefix)
+
+def print_successors(self, prefix, k=None):
+    """
+    Print the successors of a prefix.
+
+    Args:
+        prefix: Prefix to display.
+        k: Optional limit on the number of successors shown.
+    """
+    if self.n < 3:
+        print(prefix, ":")
+    else:
+        print(" ".join(prefix), ":")
+
+    to_print = self.get_successors(prefix)
+
+    if k is not None:
+        print(f"Top {k} successors:")
+        to_print = to_print[:k]
+
+    for successor, count in to_print:
+        print(f"\t{successor} -- {count}")
+
+def print_model(self, k=None):
+    """
+    Print the complete model and summary statistics.
+
+    Args:
+        k: Optional limit on successors displayed per prefix.
+    """
+    print("-----------------------")
+    print(f"Model {self.n}-grams:\n")
+
+    for prefix in self.ngram_table:
+        self.print_successors(prefix, k)
+
+    print("------------------------")
+    print("Statistics")
+    print(f"n = {self.n}")
+    print("V =", self.V)
+    print("Number of prefixes:", len(self.ngram_table))
+    print("------------------------")
+```
+
+if **name** == "**main**":
+# Simple smoke test for manual verification.
+
+```
+from Corpusreader import Tokenizer
+
+toy = "\"Hi !there friend!\" !??? Can't you help me? There aren't so many..."
+
+tok = Tokenizer()
+
+sents = tok.string2sentences(toy)
+
+gold_sents = [
+    ['Hi', 'there', 'friend'],
+    ["Can't", 'you', 'help', 'me'],
+    ['There', "aren't", 'so', 'many'],
+]
+
+print("string2sentences matches gold:", sents == gold_sents)
+
+model = NGramModel(sents, 4, tok)
+
+model.print_model()
+
+test_sentence = "Hi there, friend"
+test_tokens = tok.word_tokenize(test_sentence)
+
+print(
+    "Perplexity (smoothed k=1):",
+    model.perplexity(test_tokens, 1)
+)
+
+print(
+    "Corpus perplexity per sentence (k=1):",
+    model.corpus_perplexity(toy, 1)
+)
+```
+
+"""
