@@ -1,3 +1,4 @@
 In HW1 we planned to use Counter objects. During implementation we found nested defaultdict(int) structures easier to use because they naturally supported the required nested dictionary format.
 In HW1 we expected to use split(), but during implementation we realised that character-level modelling requires list(item), since split() separates words rather than characters.
 In HW1 we stated that we might switch to log space, we eventually did. 
+In HW1 we wrote: The program will know when a sentence is complete when the likelihood of </s> is higher than any other word, , but in the final implementation we instead sample from the full probability distribution and stop only when </s> is actually generated.
