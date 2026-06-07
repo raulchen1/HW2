@@ -1,13 +1,6 @@
 """
 Generation module for Homework 2.
-Defines functions to use a trained NGramModel generatively:
-- generate_one: sample a single sentence (sentence mode) or word
-  (word mode) from a trained model.
-- demonstrate: print a short report for a single model -- its string
-  representation, five generated items, and the raw and LaPlace-smoothed
-  perplexity of six fixed test items.
-When run as a script, builds and demonstrates one model whose training
-data, n, mode, and tokenizer are chosen on the command line.
+Defines functions to use a trained NGramModel generatively
 """
 import argparse
 import os
@@ -17,9 +10,7 @@ from model import NGramModel, START, END
 # Fix the random seed so generated output is reproducible across runs.
 # (Handy for debugging and for the report.)
 random.seed(42)
-# ---------------------------------------------------------------------------
 # Fixed test items from the assignment
-# ---------------------------------------------------------------------------
 TEST_WORDS = ["swicky", "these", "devils", "foonch", "FAQ", "isn't"]
 TEST_SENTENCES = [
     "\"Don't make too much noise,\" said Father Brown.",
@@ -30,9 +21,8 @@ TEST_SENTENCES = [
     "The swicky men left.",
 ]
 print("RUNNING GENERATE.PY")
-# ---------------------------------------------------------------------------
+
 # Generation
-# ---------------------------------------------------------------------------
 def generate_one(model, max_length=100):
     """
     Generate a single item (sentence or word) from a trained NGramModel.
@@ -70,9 +60,8 @@ def generate_one(model, max_length=100):
         # In word mode the atoms are characters; join into a string.
         return "".join(real_atoms)
     return real_atoms
-# ---------------------------------------------------------------------------
+
 # Demonstration
-# ---------------------------------------------------------------------------
 def _format_item(item):
     """
     Render a generated item nicely for printing.
@@ -125,9 +114,7 @@ def demonstrate(model):
             for i, (r, s) in enumerate(zip(raw, smoothed)):
                 print(f"    sub-item {i}: Raw {r:.4f}   Smoothed {s:.4f}")
     print("----------------\n")
-# ---------------------------------------------------------------------------
-# CLI
-# ---------------------------------------------------------------------------
+
 def _build_tokenizer(name):
     """
     Map a CLI tokenizer name to an instantiated tokenizer object.
