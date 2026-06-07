@@ -1,0 +1,995 @@
+RUNNING CORPUSREADER.PY
+MODEL.PY
+RUNNING GENERATE.PY
+
+======================================================================
+  PART 1 – Train-corpus models  (12 models)
+======================================================================
+
+Loading corpus (this may take a moment) …
+  plain tokenizer: 0 sentences, 0 words
+  NLTK  tokenizer: 0 sentences, 0 words
+
+────────────────────────────────────────────────────────────
+  Model 1/12 – n=2, tokenizer=plain Tokenizer, mode=sentence
+────────────────────────────────────────────────────────────
+
+Training … (0 items)
+-------------------
+2-gram model for sentences
+Tokenizer class: Tokenizer
+V = 0
+Number of prefixes: 0
+-------------------
+
+Generated items:
+  
+  
+  
+  
+  
+
+----------------
+Perplexities:
+  '"Don\'t make too much noise," said Father Brown.'
+    Raw:      inf
+    Smoothed: inf
+  "Don't go there!"
+    Raw:      inf
+    Smoothed: inf
+  'Father Brown laughed.'
+    Raw:      inf
+    Smoothed: inf
+  "make noise too much don't Father said Brown."
+    Raw:      inf
+    Smoothed: inf
+  'The men left.'
+    Raw:      inf
+    Smoothed: inf
+  'The swicky men left.'
+    Raw:      inf
+    Smoothed: inf
+----------------
+
+
+────────────────────────────────────────────────────────────
+  Model 2/12 – n=2, tokenizer=plain Tokenizer, mode=word
+────────────────────────────────────────────────────────────
+
+Training … (0 items)
+-------------------
+2-gram model for words
+Tokenizer class: Tokenizer
+V = 0
+Number of prefixes: 0
+-------------------
+
+Generated items:
+  
+  
+  
+  
+  
+
+----------------
+Perplexities:
+  'swicky'
+    Raw:      inf
+    Smoothed: inf
+  'these'
+    Raw:      inf
+    Smoothed: inf
+  'devils'
+    Raw:      inf
+    Smoothed: inf
+  'foonch'
+    Raw:      inf
+    Smoothed: inf
+  'FAQ'
+    Raw:      inf
+    Smoothed: inf
+  "isn't"
+    Raw:      inf
+    Smoothed: inf
+----------------
+
+
+────────────────────────────────────────────────────────────
+  Model 3/12 – n=2, tokenizer=TokenizerNLTK, mode=sentence
+────────────────────────────────────────────────────────────
+
+Training … (0 items)
+-------------------
+2-gram model for sentences
+Tokenizer class: TokenizerNLTK
+V = 0
+Number of prefixes: 0
+-------------------
+
+Generated items:
+  
+  
+  
+  
+  
+
+----------------
+Perplexities:
+  '"Don\'t make too much noise," said Father Brown.'
+    Raw:      inf
+    Smoothed: inf
+  "Don't go there!"
+    Raw:      inf
+    Smoothed: inf
+  'Father Brown laughed.'
+    Raw:      inf
+    Smoothed: inf
+  "make noise too much don't Father said Brown."
+    Raw:      inf
+    Smoothed: inf
+  'The men left.'
+    Raw:      inf
+    Smoothed: inf
+  'The swicky men left.'
+    Raw:      inf
+    Smoothed: inf
+----------------
+
+
+────────────────────────────────────────────────────────────
+  Model 4/12 – n=2, tokenizer=TokenizerNLTK, mode=word
+────────────────────────────────────────────────────────────
+
+Training … (0 items)
+-------------------
+2-gram model for words
+Tokenizer class: TokenizerNLTK
+V = 0
+Number of prefixes: 0
+-------------------
+
+Generated items:
+  
+  
+  
+  
+  
+
+----------------
+Perplexities:
+  'swicky'
+    Raw:      inf
+    Smoothed: inf
+  'these'
+    Raw:      inf
+    Smoothed: inf
+  'devils'
+    Raw:      inf
+    Smoothed: inf
+  'foonch'
+    Raw:      inf
+    Smoothed: inf
+  'FAQ'
+    Raw:      inf
+    Smoothed: inf
+  "isn't"
+    sub-item 0: Raw inf   Smoothed inf
+    sub-item 1: Raw inf   Smoothed inf
+----------------
+
+
+────────────────────────────────────────────────────────────
+  Model 5/12 – n=3, tokenizer=plain Tokenizer, mode=sentence
+────────────────────────────────────────────────────────────
+
+Training … (0 items)
+-------------------
+3-gram model for sentences
+Tokenizer class: Tokenizer
+V = 0
+Number of prefixes: 0
+-------------------
+
+Generated items:
+  
+  
+  
+  
+  
+
+----------------
+Perplexities:
+  '"Don\'t make too much noise," said Father Brown.'
+    Raw:      inf
+    Smoothed: inf
+  "Don't go there!"
+    Raw:      inf
+    Smoothed: inf
+  'Father Brown laughed.'
+    Raw:      inf
+    Smoothed: inf
+  "make noise too much don't Father said Brown."
+    Raw:      inf
+    Smoothed: inf
+  'The men left.'
+    Raw:      inf
+    Smoothed: inf
+  'The swicky men left.'
+    Raw:      inf
+    Smoothed: inf
+----------------
+
+
+────────────────────────────────────────────────────────────
+  Model 6/12 – n=3, tokenizer=plain Tokenizer, mode=word
+────────────────────────────────────────────────────────────
+
+Training … (0 items)
+-------------------
+3-gram model for words
+Tokenizer class: Tokenizer
+V = 0
+Number of prefixes: 0
+-------------------
+
+Generated items:
+  
+  
+  
+  
+  
+
+----------------
+Perplexities:
+  'swicky'
+    Raw:      inf
+    Smoothed: inf
+  'these'
+    Raw:      inf
+    Smoothed: inf
+  'devils'
+    Raw:      inf
+    Smoothed: inf
+  'foonch'
+    Raw:      inf
+    Smoothed: inf
+  'FAQ'
+    Raw:      inf
+    Smoothed: inf
+  "isn't"
+    Raw:      inf
+    Smoothed: inf
+----------------
+
+
+────────────────────────────────────────────────────────────
+  Model 7/12 – n=3, tokenizer=TokenizerNLTK, mode=sentence
+────────────────────────────────────────────────────────────
+
+Training … (0 items)
+-------------------
+3-gram model for sentences
+Tokenizer class: TokenizerNLTK
+V = 0
+Number of prefixes: 0
+-------------------
+
+Generated items:
+  
+  
+  
+  
+  
+
+----------------
+Perplexities:
+  '"Don\'t make too much noise," said Father Brown.'
+    Raw:      inf
+    Smoothed: inf
+  "Don't go there!"
+    Raw:      inf
+    Smoothed: inf
+  'Father Brown laughed.'
+    Raw:      inf
+    Smoothed: inf
+  "make noise too much don't Father said Brown."
+    Raw:      inf
+    Smoothed: inf
+  'The men left.'
+    Raw:      inf
+    Smoothed: inf
+  'The swicky men left.'
+    Raw:      inf
+    Smoothed: inf
+----------------
+
+
+────────────────────────────────────────────────────────────
+  Model 8/12 – n=3, tokenizer=TokenizerNLTK, mode=word
+────────────────────────────────────────────────────────────
+
+Training … (0 items)
+-------------------
+3-gram model for words
+Tokenizer class: TokenizerNLTK
+V = 0
+Number of prefixes: 0
+-------------------
+
+Generated items:
+  
+  
+  
+  
+  
+
+----------------
+Perplexities:
+  'swicky'
+    Raw:      inf
+    Smoothed: inf
+  'these'
+    Raw:      inf
+    Smoothed: inf
+  'devils'
+    Raw:      inf
+    Smoothed: inf
+  'foonch'
+    Raw:      inf
+    Smoothed: inf
+  'FAQ'
+    Raw:      inf
+    Smoothed: inf
+  "isn't"
+    sub-item 0: Raw inf   Smoothed inf
+    sub-item 1: Raw inf   Smoothed inf
+----------------
+
+
+────────────────────────────────────────────────────────────
+  Model 9/12 – n=4, tokenizer=plain Tokenizer, mode=sentence
+────────────────────────────────────────────────────────────
+
+Training … (0 items)
+-------------------
+4-gram model for sentences
+Tokenizer class: Tokenizer
+V = 0
+Number of prefixes: 0
+-------------------
+
+Generated items:
+  
+  
+  
+  
+  
+
+----------------
+Perplexities:
+  '"Don\'t make too much noise," said Father Brown.'
+    Raw:      inf
+    Smoothed: inf
+  "Don't go there!"
+    Raw:      inf
+    Smoothed: inf
+  'Father Brown laughed.'
+    Raw:      inf
+    Smoothed: inf
+  "make noise too much don't Father said Brown."
+    Raw:      inf
+    Smoothed: inf
+  'The men left.'
+    Raw:      inf
+    Smoothed: inf
+  'The swicky men left.'
+    Raw:      inf
+    Smoothed: inf
+----------------
+
+
+────────────────────────────────────────────────────────────
+  Model 10/12 – n=4, tokenizer=plain Tokenizer, mode=word
+────────────────────────────────────────────────────────────
+
+Training … (0 items)
+-------------------
+4-gram model for words
+Tokenizer class: Tokenizer
+V = 0
+Number of prefixes: 0
+-------------------
+
+Generated items:
+  
+  
+  
+  
+  
+
+----------------
+Perplexities:
+  'swicky'
+    Raw:      inf
+    Smoothed: inf
+  'these'
+    Raw:      inf
+    Smoothed: inf
+  'devils'
+    Raw:      inf
+    Smoothed: inf
+  'foonch'
+    Raw:      inf
+    Smoothed: inf
+  'FAQ'
+    Raw:      inf
+    Smoothed: inf
+  "isn't"
+    Raw:      inf
+    Smoothed: inf
+----------------
+
+
+────────────────────────────────────────────────────────────
+  Model 11/12 – n=4, tokenizer=TokenizerNLTK, mode=sentence
+────────────────────────────────────────────────────────────
+
+Training … (0 items)
+-------------------
+4-gram model for sentences
+Tokenizer class: TokenizerNLTK
+V = 0
+Number of prefixes: 0
+-------------------
+
+Generated items:
+  
+  
+  
+  
+  
+
+----------------
+Perplexities:
+  '"Don\'t make too much noise," said Father Brown.'
+    Raw:      inf
+    Smoothed: inf
+  "Don't go there!"
+    Raw:      inf
+    Smoothed: inf
+  'Father Brown laughed.'
+    Raw:      inf
+    Smoothed: inf
+  "make noise too much don't Father said Brown."
+    Raw:      inf
+    Smoothed: inf
+  'The men left.'
+    Raw:      inf
+    Smoothed: inf
+  'The swicky men left.'
+    Raw:      inf
+    Smoothed: inf
+----------------
+
+
+────────────────────────────────────────────────────────────
+  Model 12/12 – n=4, tokenizer=TokenizerNLTK, mode=word
+────────────────────────────────────────────────────────────
+
+Training … (0 items)
+-------------------
+4-gram model for words
+Tokenizer class: TokenizerNLTK
+V = 0
+Number of prefixes: 0
+-------------------
+
+Generated items:
+  
+  
+  
+  
+  
+
+----------------
+Perplexities:
+  'swicky'
+    Raw:      inf
+    Smoothed: inf
+  'these'
+    Raw:      inf
+    Smoothed: inf
+  'devils'
+    Raw:      inf
+    Smoothed: inf
+  'foonch'
+    Raw:      inf
+    Smoothed: inf
+  'FAQ'
+    Raw:      inf
+    Smoothed: inf
+  "isn't"
+    sub-item 0: Raw inf   Smoothed inf
+    sub-item 1: Raw inf   Smoothed inf
+----------------
+
+
+======================================================================
+  PART 2 – NLTK Gutenberg corpus models  (12 models)
+======================================================================
+
+Loading Gutenberg data via NLTK corpus methods …
+  NLTK sents(): 98552 sentences
+  NLTK words(): 2621613 words
+Loading Gutenberg data via raw() + our tokenizer …
+  our sents: 94374 sentences
+  our words: 2159213 words
+
+────────────────────────────────────────────────────────────
+  Gutenberg model 1/12 – n=2, mode=sentence, source=NLTK Gutenberg methods
+────────────────────────────────────────────────────────────
+
+Training … (98552 items)
+-------------------
+2-gram model for sentences
+Tokenizer class: TokenizerNLTK
+V = 42318
+Number of prefixes: 42318
+-------------------
+
+Generated items:
+  no more of the papers in whatever it came to me the lord , not hearken unto you an hundred million - rooms , crimson and the children and look a deceitful work ( he thought would seem english classics master , and , and to the ship on his glory of the mahlites , was in many , to dispossess him a group made themselves .
+  1 : 7 turn yourselves .
+  6
+  14 : 5 and a complete ignorance , and gown ; and the land which elinor was a boy ecstatic reaction .
+  " here at her in thee , " well hit ," said the whole voyage among the souls to be covered .
+
+----------------
+Perplexities:
+  '"Don\'t make too much noise," said Father Brown.'
+    Raw:      inf
+    Smoothed: inf
+  "Don't go there!"
+    Raw:      inf
+    Smoothed: inf
+  'Father Brown laughed.'
+    Raw:      inf
+    Smoothed: 4145.7461
+  "make noise too much don't Father said Brown."
+    Raw:      inf
+    Smoothed: inf
+  'The men left.'
+    Raw:      241.6980
+    Smoothed: 1223.8009
+  'The swicky men left.'
+    Raw:      inf
+    Smoothed: inf
+----------------
+
+
+────────────────────────────────────────────────────────────
+  Gutenberg model 2/12 – n=2, mode=sentence, source=raw() + our tokenizer
+────────────────────────────────────────────────────────────
+
+Training … (94374 items)
+-------------------
+2-gram model for sentences
+Tokenizer class: TokenizerNLTK
+V = 52483
+Number of prefixes: 52483
+-------------------
+
+Generated items:
+  nothing but as the flint i began to the glasses with the four hundred measures advised her usual unwillingness to afflict thee and many witnesses shall not prefer would have any of the air then i have been alone in goodness toward the name which was not do. then as being indisposed for the others by my luck you inland and thy life however the city shall he that they send unto jacob for the models the travelling through london and had the family of them loud voice had always wanting power consign 'd away from his cranial cavity seldom
+  14:22 and jacob his repentance
+  58:10 the sons and right
+  and walls of its weaknesses all and gave jacob
+  buster bear his attention
+
+----------------
+Perplexities:
+  '"Don\'t make too much noise," said Father Brown.'
+    Raw:      73.9198
+    Smoothed: 1451.6049
+  "Don't go there!"
+    Raw:      62.0287
+    Smoothed: 568.9361
+  'Father Brown laughed.'
+    Raw:      73.8890
+    Smoothed: 2354.0977
+  "make noise too much don't Father said Brown."
+    Raw:      inf
+    Smoothed: 4376.9514
+  'The men left.'
+    Raw:      103.1056
+    Smoothed: 663.2857
+  'The swicky men left.'
+    Raw:      inf
+    Smoothed: inf
+----------------
+
+
+────────────────────────────────────────────────────────────
+  Gutenberg model 3/12 – n=2, mode=word, source=NLTK Gutenberg methods
+────────────────────────────────────────────────────────────
+
+Training … (2621613 items)
+-------------------
+2-gram model for words
+Tokenizer class: TokenizerNLTK
+V = 69
+Number of prefixes: 69
+-------------------
+
+Generated items:
+  sandfy
+  attave
+  :
+  bt
+  te
+
+----------------
+Perplexities:
+  'swicky'
+    Raw:      18.6938
+    Smoothed: 18.6943
+  'these'
+    Raw:      4.9665
+    Smoothed: 4.9669
+  'devils'
+    Raw:      17.1296
+    Smoothed: 17.1324
+  'foonch'
+    Raw:      13.1471
+    Smoothed: 13.1489
+  'FAQ'
+    Raw:      235.8478
+    Smoothed: 232.4451
+  "isn't"
+    sub-item 0: Raw 7.3064   Smoothed 7.3070
+    sub-item 1: Raw inf   Smoothed 1276.2363
+----------------
+
+
+────────────────────────────────────────────────────────────
+  Gutenberg model 4/12 – n=2, mode=word, source=raw() + our tokenizer
+────────────────────────────────────────────────────────────
+
+Training … (2159213 items)
+-------------------
+2-gram model for words
+Tokenizer class: TokenizerNLTK
+V = 51
+Number of prefixes: 51
+-------------------
+
+Generated items:
+  mme
+  t
+  asanthakn
+  winof
+  cer
+
+----------------
+Perplexities:
+  'swicky'
+    Raw:      18.3703
+    Smoothed: 18.3691
+  'these'
+    Raw:      4.8190
+    Smoothed: 4.8193
+  'devils'
+    Raw:      16.8104
+    Smoothed: 16.8123
+  'foonch'
+    Raw:      12.8322
+    Smoothed: 12.8334
+  'FAQ'
+    Raw:      230.4786
+    Smoothed: 226.8461
+  "isn't"
+    sub-item 0: Raw 6.8679   Smoothed 6.8683
+    sub-item 1: Raw 23.6656   Smoothed 23.6775
+----------------
+
+
+────────────────────────────────────────────────────────────
+  Gutenberg model 5/12 – n=3, mode=sentence, source=NLTK Gutenberg methods
+────────────────────────────────────────────────────────────
+
+Training … (98552 items)
+-------------------
+3-gram model for sentences
+Tokenizer class: TokenizerNLTK
+V = 42318
+Number of prefixes: 532984
+-------------------
+
+Generated items:
+  " could i look round and round the loggerhead ; so leave us , and i sent among you : for such thou art glorified : thou mayest eat the life which is by bethlehem , to " miss macnab ," said stubb , " that i say de trop ?"
+  yong fry of treachery ?
+  strange , and had wrought among you .
+  as he commanded the insurgents instantly to return .
+  " to be taken : lo , he and all the earth .
+
+----------------
+Perplexities:
+  '"Don\'t make too much noise," said Father Brown.'
+    Raw:      inf
+    Smoothed: inf
+  "Don't go there!"
+    Raw:      inf
+    Smoothed: inf
+  'Father Brown laughed.'
+    Raw:      inf
+    Smoothed: 6624.1667
+  "make noise too much don't Father said Brown."
+    Raw:      inf
+    Smoothed: inf
+  'The men left.'
+    Raw:      inf
+    Smoothed: 3867.6653
+  'The swicky men left.'
+    Raw:      inf
+    Smoothed: inf
+----------------
+
+
+────────────────────────────────────────────────────────────
+  Gutenberg model 6/12 – n=3, mode=sentence, source=raw() + our tokenizer
+────────────────────────────────────────────────────────────
+
+Training … (94374 items)
+-------------------
+3-gram model for sentences
+Tokenizer class: TokenizerNLTK
+V = 52483
+Number of prefixes: 578373
+-------------------
+
+Generated items:
+  10:13 ye have done very little more knowledge and discretion
+  all these have written leading articles about them at the trap once more
+  it was so good an understanding heart so that thou art a swift cloud and shall be forgiven him neither was there no sequell at the difference will still continue to practise hypocrisy and iniquity was not cut down and write therein all the idols of the whale and the beast that may understand ragging and yet a great deal more exactly for mamma has taught me to lie to sarve a friend captain brigden i shall not die
+  oh it is not true
+  landlord
+
+----------------
+Perplexities:
+  '"Don\'t make too much noise," said Father Brown.'
+    Raw:      inf
+    Smoothed: 5577.4955
+  "Don't go there!"
+    Raw:      inf
+    Smoothed: 4393.8664
+  'Father Brown laughed.'
+    Raw:      30.8742
+    Smoothed: 6571.9612
+  "make noise too much don't Father said Brown."
+    Raw:      inf
+    Smoothed: inf
+  'The men left.'
+    Raw:      68.8787
+    Smoothed: 3812.2774
+  'The swicky men left.'
+    Raw:      inf
+    Smoothed: inf
+----------------
+
+
+────────────────────────────────────────────────────────────
+  Gutenberg model 7/12 – n=3, mode=word, source=NLTK Gutenberg methods
+────────────────────────────────────────────────────────────
+
+Training … (2621613 items)
+-------------------
+3-gram model for words
+Tokenizer class: TokenizerNLTK
+V = 69
+Number of prefixes: 908
+-------------------
+
+Generated items:
+  hathe
+  the
+  dene
+  thefortatur
+  an
+
+----------------
+Perplexities:
+  'swicky'
+    Raw:      15.5329
+    Smoothed: 15.8344
+  'these'
+    Raw:      5.8139
+    Smoothed: 5.8161
+  'devils'
+    Raw:      12.6646
+    Smoothed: 12.7005
+  'foonch'
+    Raw:      12.2517
+    Smoothed: 12.2682
+  'FAQ'
+    Raw:      inf
+    Smoothed: 128.9689
+  "isn't"
+    sub-item 0: Raw 5.9249   Smoothed 5.9276
+    sub-item 1: Raw inf   Smoothed inf
+----------------
+
+
+────────────────────────────────────────────────────────────
+  Gutenberg model 8/12 – n=3, mode=word, source=raw() + our tokenizer
+────────────────────────────────────────────────────────────
+
+Training … (2159213 items)
+-------------------
+3-gram model for words
+Tokenizer class: TokenizerNLTK
+V = 51
+Number of prefixes: 995
+-------------------
+
+Generated items:
+  of
+  cous
+  duch
+  mr.
+  th
+
+----------------
+Perplexities:
+  'swicky'
+    Raw:      15.2562
+    Smoothed: 15.4703
+  'these'
+    Raw:      5.6365
+    Smoothed: 5.6380
+  'devils'
+    Raw:      12.3367
+    Smoothed: 12.3607
+  'foonch'
+    Raw:      11.9097
+    Smoothed: 11.9203
+  'FAQ'
+    Raw:      inf
+    Smoothed: 116.7552
+  "isn't"
+    sub-item 0: Raw 5.5370   Smoothed 5.5388
+    sub-item 1: Raw 5.8614   Smoothed 5.9232
+----------------
+
+
+────────────────────────────────────────────────────────────
+  Gutenberg model 9/12 – n=4, mode=sentence, source=NLTK Gutenberg methods
+────────────────────────────────────────────────────────────
+
+Training … (98552 items)
+-------------------
+4-gram model for sentences
+Tokenizer class: TokenizerNLTK
+V = 42318
+Number of prefixes: 1372568
+-------------------
+
+Generated items:
+  " all ye mast - headers have before now heard of such books before i mentioned them , but that by keeping of his covenant with abraham will i remember thee from the strange woman , and the disobedient to the wisdom of egypt .
+  " eat first ," said she .
+  in edward ' s future wife , and replied , " that if we had been out in the course of the sleepless night , which was the son of jesse , which shall to all our tender flowers .
+  if it were to be asked , and he shall sprinkle of the blood of european nobles , they clasp no more the breeding , but to go basking about in the press .
+  i am sure she would be so .
+
+----------------
+Perplexities:
+  '"Don\'t make too much noise," said Father Brown.'
+    Raw:      inf
+    Smoothed: inf
+  "Don't go there!"
+    Raw:      inf
+    Smoothed: inf
+  'Father Brown laughed.'
+    Raw:      inf
+    Smoothed: 6617.7707
+  "make noise too much don't Father said Brown."
+    Raw:      inf
+    Smoothed: inf
+  'The men left.'
+    Raw:      inf
+    Smoothed: 4586.6662
+  'The swicky men left.'
+    Raw:      inf
+    Smoothed: inf
+----------------
+
+
+────────────────────────────────────────────────────────────
+  Gutenberg model 10/12 – n=4, mode=sentence, source=raw() + our tokenizer
+────────────────────────────────────────────────────────────
+
+Training … (94374 items)
+-------------------
+4-gram model for sentences
+Tokenizer class: TokenizerNLTK
+V = 52483
+Number of prefixes: 1350556
+-------------------
+
+Generated items:
+  mrs. theresa instantly rang the bell in spite of herself she had little hope of success but elizabeth who in the worship persevere of spirit and there was a man take him for an author and the artists for an artist and the laborers perceive he could labor with them and even with their massive arms overhand the hammers swing overhand so slow overhand so sure they do beare fire enough to kindle cowards and to steele with valour the melting spirits of women
+  lashed round and round with joyous expectant cries
+  30:11 he and his daughter bab or miss barbara as she must now be travelling towards them
+  afar they stand yet near to me i will give thy flesh unto the fowls of the heaven to divide the fruit into small pieces among them
+  mr. and mrs. elton led the way it 's worse than being in the red sea and encamped in gilead
+
+----------------
+Perplexities:
+  '"Don\'t make too much noise," said Father Brown.'
+    Raw:      inf
+    Smoothed: inf
+  "Don't go there!"
+    Raw:      inf
+    Smoothed: inf
+  'Father Brown laughed.'
+    Raw:      17.5272
+    Smoothed: 6566.8100
+  "make noise too much don't Father said Brown."
+    Raw:      inf
+    Smoothed: inf
+  'The men left.'
+    Raw:      inf
+    Smoothed: 5379.2960
+  'The swicky men left.'
+    Raw:      inf
+    Smoothed: inf
+----------------
+
+
+────────────────────────────────────────────────────────────
+  Gutenberg model 11/12 – n=4, mode=word, source=NLTK Gutenberg methods
+────────────────────────────────────────────────────────────
+
+Training … (2621613 items)
+-------------------
+4-gram model for words
+Tokenizer class: TokenizerNLTK
+V = 69
+Number of prefixes: 6910
+-------------------
+
+Generated items:
+  thoose
+  migh
+  to
+  her
+  prod
+
+----------------
+Perplexities:
+  'swicky'
+    Raw:      13.5985
+    Smoothed: 14.4607
+  'these'
+    Raw:      3.7107
+    Smoothed: 3.7279
+  'devils'
+    Raw:      5.9505
+    Smoothed: 6.1678
+  'foonch'
+    Raw:      inf
+    Smoothed: 50.4788
+  'FAQ'
+    Raw:      inf
+    Smoothed: inf
+  "isn't"
+    sub-item 0: Raw 5.4233   Smoothed 5.4303
+    sub-item 1: Raw inf   Smoothed inf
+----------------
+
+
+────────────────────────────────────────────────────────────
+  Gutenberg model 12/12 – n=4, mode=word, source=raw() + our tokenizer
+────────────────────────────────────────────────────────────
+
+Training … (2159213 items)
+The program 'python.exe' has exited with code 4294967295 (0xffffffff).
