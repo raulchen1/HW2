@@ -1,0 +1,300 @@
+"""
+Test script for Homework 2.
+Defines test functions for the Tokenizer, TokenizerNLTK, and
+NGramModel classes, and runs them all when executed as a script.
+Each test function returns True on success and False on failure,
+printing a diagnostic message in the failure case.
+"""
+import os
+import string
+from Corpusreader import Tokenizer, TokenizerNLTK, CorpusReader
+from model import NGramModel, START, END
+# ---------------------------------------------------------------------------
+# Tokenizer tests
+# ---------------------------------------------------------------------------
+def test_tokenizer_plain():
+    """
+    Test the plain Tokenizer class against a small hand-written corpus.
+    The corpus contains:
+    - Trailing punctuation that should be stripped ("Wow!!!", "didn't.").
+    - Internal punctuation that should be kept ("didn't").
+    - Quotes around a sentence that should be stripped.
+    - Extra whitespace that should be collapsed.
+    @return: bool: True if Tokenizer.string2sentences produces the
+             expected output, False otherwise (with a diagnostic printed).
+    """
+    corpus = "Hello, world! I didn't expect that.  \"Wow!!!\"\n"
+    expected = [
+        ["Hello", "world"],
+        ["I", "didn't", "expect", "that"],
+        ["Wow"],
+    ]
+    tokenizer = Tokenizer()
+    actual = tokenizer.string2sentences(corpus)
+    if actual == expected:
+        return True
+    # Print a side-by-side comparison so the failure is easy to debug.
+    print("test_tokenizer_plain FAILED")
+    print(f"  input:    {corpus!r}")
+    print(f"  expected: {expected}")
+    print(f"  actual:   {actual}")
+    if len(actual) != len(expected):
+        print(f"  -> sentence count differs: "
+              f"expected {len(expected)}, got {len(actual)}")
+    else:
+        for i, (exp, act) in enumerate(zip(expected, actual)):
+            if exp != act:
+                print(f"  -> sentence {i} differs:")
+                print(f"       expected: {exp}")
+                print(f"       actual:   {act}")
+    return False
+def test_tokenize_nltk():
+    """
+    Test the TokenizerNLTK class on the same tiny corpus used by
+    test_tokenizer_plain.
+    NLTK splits contractions, so "didn't" becomes two tokens: "did"
+    and "n't". The expected output reflects that difference, but the
+    overall structure (a list of lists of strings) and the sentence
+    boundaries should still match.
+    @return: bool: True if TokenizerNLTK.string2sentences produces the
+             expected output, False otherwise (with a diagnostic printed).
+    """
+    corpus = "Hello, world! I didn't expect that.  \"Wow!!!\"\n"
+    # NLTK keeps the apostrophe-led "n't" as a separate token.
+    # Pure-punctuation tokens like "," and "''" are dropped by our
+    # TokenizerNLTK.word_tokenize implementation.
+    expected = [
+        ["Hello", "world"],
+        ["I", "did", "n't", "expect", "that"],
+        ["Wow"],
+    ]
+    try:
+        tokenizer = TokenizerNLTK()
+    except Exception as e:
+        print(f"test_tokenize_nltk SKIPPED NLTK unavailable: {e}")
+        return False
+    actual = tokenizer.string2sentences(corpus)
+    if actual == expected:
+        return True
+    print("test_tokenize_nltk FAILED")
+    print(f"  input:    {corpus!r}")
+    print(f"  expected: {expected}")
+    print(f"  actual:   {actual}")
+    if len(actual) != len(expected):
+        print(f"  -> sentence count differs: "
+              f"expected {len(expected)}, got {len(actual)}")
+    else:
+        for i, (exp, act) in enumerate(zip(expected, actual)):
+            if exp != act:
+                print(f"  -> sentence {i} differs:")
+                print(f"       expected: {exp}")
+                print(f"       actual:   {act}")
+    return False
+# ---------------------------------------------------------------------------
+# NGramModel tests
+# ---------------------------------------------------------------------------
+def _build_tiny_trigram_model():
+    """
+    Build a small trigram model used by both test_ngram_table and
+    test_probability_zero.
+    The corpus is two short sentences sharing some vocabulary so that
+    at least one prefix has more than one successor:
+        "I love cats"
+        "I love dogs"
+    After preprocessing each sentence becomes:
+        [<s>, <s>, i, love, cats, </s>]
+        [<s>, <s>, i, love, dogs, </s>]
+    @return: NGramModel: a trigram (n=3) model in sentence mode.
+    """
+    sents = [
+        ["I", "love", "cats"],
+        ["I", "love", "dogs"],
+    ]
+    return NGramModel(sents, n=3, tokenizer=Tokenizer(), mode="sentence")
+def test_ngram_table():
+    """
+    Initialise a trigram model on a tiny hand-written corpus and
+    compare the resulting ngram_table to a hand-written gold dict.
+    Walking through the two preprocessed sentences:
+        (<s>, <s>) -> i      [twice]
+        (<s>, i)   -> love   [twice]
+        (i, love)  -> cats   [once]
+        (i, love)  -> dogs   [once]
+        (love, cats) -> </s> [once]
+        (love, dogs) -> </s> [once]
+    @return: bool: True if the model's ngram_table matches the gold
+        dict, False otherwise (with a diagnostic printed).
+    """
+    model = _build_tiny_trigram_model()
+    expected = {
+        (START, START): {"i": 2},
+        (START, "i"): {"love": 2},
+        ("i", "love"): {"cats": 1, "dogs": 1},
+        ("love", "cats"): {END: 1},
+        ("love", "dogs"): {END: 1},
+    }
+    actual = model.ngram_table
+    if actual == expected:
+        return True
+    print("test_ngram_table FAILED")
+    print(f"  expected keys: {sorted(expected.keys())}")
+    print(f"  actual keys:   {sorted(actual.keys())}")
+    missing = set(expected) - set(actual)
+    extra = set(actual) - set(expected)
+    if missing:
+        print(f"  -> missing prefixes: {missing}")
+    if extra:
+        print(f"  -> unexpected prefixes: {extra}")
+    # Compare successor dicts for every prefix that appears in both.
+    for prefix in set(expected) & set(actual):
+        if expected[prefix] != actual[prefix]:
+            print(f"  -> successors differ for prefix {prefix}:")
+            print(f"       expected: {expected[prefix]}")
+            print(f"       actual:   {actual[prefix]}")
+    return False
+def test_probability_zero():
+    """
+    Test the four required zero/non-zero probability cases against the
+    tiny trigram model from _build_tiny_trigram_model.
+    Cases:
+      A. Prefix not in the model at all:
+         A1) raw probability == 0
+         A2) smoothed probability == 0
+            (we don't know the prefix's total count, so smoothing
+             can't produce a meaningful estimate)
+      B. Successor not in the vocabulary at all:
+         B1) raw probability == 0
+         B2) smoothed probability == 0
+            (smoothing does not extend the vocabulary)
+      C. Prefix in the model, successor in the vocabulary but never
+         observed after this prefix:
+         C1) raw probability == 0
+         C2) smoothed probability > 0
+    @return: bool: True if every case behaves as expected, False
+        otherwise (with a diagnostic printed for each mismatch).
+    """
+    model = _build_tiny_trigram_model()
+    k = 1  # LaPlace smoothing constant
+    # Use a small struct of (label, condition, detail) so we can collect
+    # every failure instead of stopping at the first one.
+    checks = []
+    # --- A. Unknown prefix ---
+    unknown_prefix = ("nobody", "knows")
+    known_successor = "cats"  # is in the vocab
+    p_a_raw = model.probability(unknown_prefix, known_successor, 0)
+    p_a_smooth = model.probability(unknown_prefix, known_successor, k)
+    checks.append((
+        "A1 raw prob for unknown prefix is 0",
+        p_a_raw == 0,
+        f"got {p_a_raw}",
+    ))
+    checks.append((
+        "A2 smoothed prob for unknown prefix is 0",
+        p_a_smooth == 0,
+        f"got {p_a_smooth}",
+    ))
+    # --- B. Unknown successor ---
+    known_prefix = ("i", "love")
+    unknown_successor = "zebras"  # not anywhere in the training data
+    p_b_raw = model.probability(known_prefix, unknown_successor, 0)
+    p_b_smooth = model.probability(known_prefix, unknown_successor, k)
+    checks.append((
+        "B1 raw prob for unknown successor is 0",
+        p_b_raw == 0,
+        f"got {p_b_raw}",
+    ))
+    checks.append((
+        "B2 smoothed prob for unknown successor is 0",
+        p_b_smooth == 0,
+        f"got {p_b_smooth}",
+    ))
+    # --- C. Known prefix, known successor, but not seen together ---
+    # ("love", "cats") is a known prefix, and "dogs" is in the vocab
+    # (it follows ("i", "love")), but "dogs" has never followed
+    # ("love", "cats") -- only </s> did.
+    seen_prefix = ("love", "cats")
+    unseen_successor = "dogs"
+    # Sanity-check that the test setup is what we think it is. If
+    # these invariants don't hold the test would silently pass for
+    # the wrong reason.
+    assert seen_prefix in model.ngram_table, \
+        "test setup: prefix should be known"
+    assert unseen_successor in model.successors, \
+        "test setup: successor should be in vocabulary"
+    assert unseen_successor not in model.ngram_table[seen_prefix], \
+        "test setup: successor should not follow this prefix"
+    p_c_raw = model.probability(seen_prefix, unseen_successor, 0)
+    p_c_smooth = model.probability(seen_prefix, unseen_successor, k)
+    checks.append((
+        "C1 raw prob for known prefix + in-vocab unseen successor is 0",
+        p_c_raw == 0,
+        f"got {p_c_raw}",
+    ))
+    checks.append((
+        "C2 smoothed prob for known prefix + in-vocab unseen successor > 0",
+        p_c_smooth > 0,
+        f"got {p_c_smooth}",
+    ))
+    failures = [(label, detail) for label, ok, detail in checks if not ok]
+    if not failures:
+        return True
+    print("test_probability_zero FAILED")
+    for label, detail in failures:
+        print(f"  -> {label}: {detail}")
+    return False
+# ---------------------------------------------------------------------------
+# Script entry point
+# ---------------------------------------------------------------------------
+if __name__ == '__main__':
+    # --- Tokenizer tests ---
+    print("=" * 50)
+    print("Running tokenizer tests")
+    print("=" * 50)
+    print("\n[1] Testing plain Tokenizer on a hand-written corpus...")
+    if test_tokenizer_plain():
+        print("    PASSED: Tokenizer.string2sentences matches expected output.")
+    else:
+        print("    FAILED: see message above.")
+    print("\n[2] Testing TokenizerNLTK on the same corpus...")
+    print("    (Expecting \"didn't\" to split into [\"did\", \"n't\"].)")
+    if test_tokenize_nltk():
+        print("    PASSED: TokenizerNLTK.string2sentences matches expected output.")
+    else:
+        print("    FAILED or SKIPPED: see message above.")
+    # --- Model tests ---
+    print("\n" + "=" * 50)
+    print("Running NGramModel tests")
+    print("=" * 50)
+    print("\n[3] Testing trigram ngram_table on a tiny corpus...")
+    if test_ngram_table():
+        print("    PASSED: ngram_table matches the hand-written gold dict.")
+    else:
+        print("    FAILED: see message above.")
+    print("\n[4] Testing zero-probability behaviour with and without smoothing...")
+    if test_probability_zero():
+        print("    PASSED: all four zero/non-zero cases behave as expected.")
+    else:
+        print("    FAILED: see message above.")
+    # --- Existing ad-hoc demo on the assignment's example string ---
+    print("\n" + "=" * 50)
+    print("Demo on the assignment example string")
+    print("=" * 50)
+    c = "Here's my sentence. \"What a nice sentence it is!!!\"   Wow! ...\n"
+    tok = Tokenizer()
+    print("\nword_tokenize:")
+    print(tok.word_tokenize(c))
+    print("\nsent_tokenize:")
+    print(tok.sent_tokenize(c))
+    print("\nstring2sentences:")
+    print(tok.string2sentences(c))
+    # --- Optional: read a real corpus if the 'train' directory exists ---
+    path = "train"
+    if os.path.isdir(path):
+        print(f"\nReading corpus from {path!r}...")
+        reader = CorpusReader(path, tok)
+        corpus = reader.sents()
+        print(f"Loaded {len(corpus)} sentences. Showing 20 30:")
+        for s in corpus[20:30]:
+            print(s)
+    else:
+        print(f"\n(Skipping corpus test '{path}' directory not found.)")
