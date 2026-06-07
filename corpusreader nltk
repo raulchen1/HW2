@@ -1,0 +1,189 @@
+import os
+import re
+import string
+import subprocess
+import nltk
+
+
+"""
+This module is about classes for reading and tokenizing text corpora.
+It defines a Tokenizer for splitting text into sentences and words, a TokenizerNLTK
+subclass that uses NLTK's tokenizers, and a CorpusReader that reads .txt files
+and returns tokenized sentences or words.
+"""
+
+
+class Tokenizer:
+    """
+    Tokenizes a data point into sentences and words.
+    """
+
+    def __init__(self):
+        pass
+
+    def _clean_word(self, word):
+        """
+        Clean up one word: remove punctuation from before and after the word,
+        but leave internal punctuation in place.
+        e.g. "Wow!!!" -> Wow
+        e.g. can't -> can't
+        @param word: str
+        @return: str
+        """
+        return word.strip(string.punctuation)
+
+    def sent_tokenize(self, text):
+        """
+        Split a text into a list of sentences.
+        Splits on . ? ! followed by any number of whitespace characters.
+        Discards empty sentences.
+        @param text: str - raw input text
+        @return: list of str - one string per sentence
+        """
+        sentences = re.split(r'[.?!]+\s*', text)
+        return [s.strip().strip('"\'') for s in sentences if s.strip()]
+
+    def word_tokenize(self, text):
+        """
+        Split a text into a list of words.
+        Splits on any whitespace and calls _clean_word on each token.
+        Discards empty words.
+        @param text: str - raw input text
+        @return: list of str - one token per word
+        """
+        return [w for w in (self._clean_word(t) for t in text.split()) if w]
+
+    def string2sentences(self, text):
+        """
+        Split a text into a list of lists of tokens.
+        Uses sent_tokenize and word_tokenize.
+        @param text: str - raw input text
+        @return: list of lists of str - each inner list is one tokenized sentence.
+                 Tokens may contain punctuation internally
+                 (e.g. can't, uh-oh) but no other punctuation.
+        """
+        return [self.word_tokenize(s) for s in self.sent_tokenize(text) if self.word_tokenize(s)]
+
+
+class TokenizerNLTK(Tokenizer):
+    """
+    A subclass of Tokenizer that uses NLTK's sent_tokenize and word_tokenize
+    instead of regex or split methods.
+    Inherits _clean_word and string2sentences from Tokenizer.
+    """
+
+    def __init__(self):
+        """
+        Initialize a TokenizerNLTK. Downloads required NLTK data if needed.
+        """
+        super().__init__()
+        try:
+            nltk.data.find('tokenizers/punkt_tab')
+        except LookupError:
+            nltk.download('punkt_tab', quiet=True)
+        try:
+            nltk.data.find('tokenizers/punkt')
+        except LookupError:
+            nltk.download('punkt', quiet=True)
+
+    def sent_tokenize(self, text):
+        """
+        Split text into sentences using NLTK's sent_tokenize.
+        Discards empty sentences.
+        @param text: str - raw input text
+        @return: list of str - one string per sentence
+        """
+        return [s for s in nltk.sent_tokenize(text) if s.strip()]
+
+    def word_tokenize(self, text):
+        """
+        Split text into words using NLTK's word_tokenize.
+        Discards empty tokens and tokens that consist entirely of punctuation.
+        @param text: str - raw input text
+        @return: list of str - one token per word
+        """
+        tokens = nltk.word_tokenize(text)
+        return [t for t in tokens if t and not all(c in string.punctuation for c in t)]
+
+
+class CorpusReader:
+    """
+    Read the contents of a directory of files, and return the results as
+    either a list of sentences or a list of words.
+
+    The pathname of the directory to read should be passed when
+    creating the class:
+    rdr = CorpusReader(r"path/to/dir")
+
+    Attributes:
+        tokenizer: used to process text
+        path: str path to directory corpus files
+    """
+
+    def __init__(self, directory, tokenizer):
+        """
+        Initialize a CorpusReader object. This function checks that
+        the directory exists and is a directory, but does not read its
+        contents.
+        @param directory: str: the path to the directory of corpus files
+        @param tokenizer: a Tokenizer
+        """
+        if not os.path.isdir(directory):
+            raise ValueError(directory + " does not exist or is not a directory")
+        self.path = directory
+        self.tokenizer = tokenizer
+
+    def _get_all_text(self):
+        """
+        Read all .txt files in self.path and return their contents as one string.
+        @return: str
+        """
+        parts = []
+        for filename in os.listdir(self.path):
+            if filename.endswith('.txt'):
+                with open(self.path + "/" + filename, encoding='utf-8') as conn:
+                    parts.append(conn.read())
+        return ' '.join(parts)
+
+    def raw(self):
+        """
+        Read in the corpus files and return everything concatenated as one long string.
+        @return: str
+        """
+        return self._get_all_text()
+
+    def sents(self):
+        """
+        Read in the corpus files and return the sentences as a list of lists of tokens.
+        Uses the tokenizer's string2sentences method.
+        @return: list of lists of str
+        """
+        return self.tokenizer.string2sentences(self._get_all_text())
+
+    def words(self):
+        """
+        Read in the corpus files and return all words as a list of tokens.
+        Uses the tokenizer's word_tokenize method.
+        @return: list of str
+        """
+        return self.tokenizer.word_tokenize(self._get_all_text())
+
+
+if __name__ == '__main__':
+    c = "Here's my sentence. \"What a nice sentence it is!!!\"   Wow! ...\n"
+
+    tok = Tokenizer()
+    words = tok.word_tokenize(c)
+    print(words)
+    sents = tok.sent_tokenize(c)
+    print(sents)
+    tokenised_sentences = tok.string2sentences(c)
+    print(tokenised_sentences)
+
+    # real data
+    path = "train"
+    reader = CorpusReader(path, tok)
+    corpus = reader.sents()
+    for s in corpus[20:30]:
+        print(s)
+
