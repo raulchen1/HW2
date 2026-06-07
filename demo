@@ -1,0 +1,146 @@
+"""
+ 
+Trains 24 n-gram models (12 on the provided train corpus, 12 on
+NLTK's Gutenberg corpus) and runs the demonstrate() function on
+each one.
+ 
+The 12 train-corpus models cover every combination of:
+  n          : 2, 3, 4
+  tokenizer  : plain Tokenizer, TokenizerNLTK
+  mode       : "sentence", "word"
+ 
+The 12 Gutenberg models cover:
+  n          : 2, 3, 4
+  tokenizer  : always TokenizerNLTK
+  mode       : "sentence", "word"
+  data source: (a) NLTK Gutenberg's own sents()/words() methods
+               (b) raw() text fed through our tokenizer
+
+"""
+ 
+if __name__ == "__main__":
+ 
+    import os
+    import random
+ 
+    import nltk
+ 
+    from Corpusreader import Tokenizer, TokenizerNLTK, CorpusReader
+    from model import NGramModel
+    from generate import demonstrate
+ 
+
+    random.seed(42)
+ 
+    def section(title: str) -> None:
+        """Print a clearly visible section header."""
+        bar = "=" * 70
+        print(f"\n{bar}")
+        print(f"  {title}")
+        print(f"{bar}\n")
+ 
+    def subsection(title: str) -> None:
+        """Print a less prominent subsection header."""
+        print(f"\n{'─' * 60}")
+        print(f"  {title}")
+        print(f"{'─' * 60}\n")
+ 
+    # 1.  TRAIN-CORPUS MODELS  (12 models)
+    section("PART 1 – Train-corpus models  (12 models)")
+ 
+    TRAIN_DIR = "train"
+    if not os.path.isdir(TRAIN_DIR):
+        print(
+            f"[WARNING] '{TRAIN_DIR}' directory not found. "
+            "Skipping Part 1.  Pass a valid corpus directory path in TRAIN_DIR."
+        )
+    else:
+        # Initialise one tokenizer of each type and one CorpusReader each.
+        tok_plain = Tokenizer()
+        tok_nltk  = TokenizerNLTK()
+ 
+        reader_plain = CorpusReader(TRAIN_DIR, tok_plain)
+        reader_nltk  = CorpusReader(TRAIN_DIR, tok_nltk)
+ 
+        # Pre-load both representations so we don't re-read files 12 times.
+        print("Loading corpus (this may take a moment) …")
+        plain_sents = reader_plain.sents()
+        plain_words = reader_plain.words()
+        nltk_sents  = reader_nltk.sents()
+        nltk_words  = reader_nltk.words()
+        print(f"  plain tokenizer: {len(plain_sents)} sentences, "
+              f"{len(plain_words)} words")
+        print(f"  NLTK  tokenizer: {len(nltk_sents)} sentences, "
+              f"{len(nltk_words)} words")
+ 
+        model_count = 0
+        for n in [2, 3, 4]:
+            for tok_name, tok_obj, sents_data, words_data in [
+                ("plain Tokenizer", tok_plain, plain_sents, plain_words),
+                ("TokenizerNLTK",   tok_nltk,  nltk_sents,  nltk_words),
+            ]:
+                for mode in ["sentence", "word"]:
+                    model_count += 1
+                    data = sents_data if mode == "sentence" else words_data
+                    subsection(
+                        f"Model {model_count}/12 – "
+                        f"n={n}, tokenizer={tok_name}, mode={mode}"
+                    )
+                    print(f"Training … ({len(data)} items)")
+                    model = NGramModel(data, n=n, tokenizer=tok_obj, mode=mode)
+                    demonstrate(model)
+
+    # 2.  GUTENBERG CORPUS MODELS  (12 models)
+
+    section("PART 2 – NLTK Gutenberg corpus models  (12 models)")
+ 
+    # Ensure the Gutenberg corpus is available.
+    try:
+        nltk.data.find("corpora/gutenberg")
+    except LookupError:
+        print("Downloading NLTK Gutenberg corpus …")
+        nltk.download("gutenberg", quiet=True)
+ 
+    from nltk.corpus import gutenberg
+ 
+    tok_nltk_g = TokenizerNLTK()   # single tokenizer instance for all Gutenberg models
+ 
+    # ---- 2a. Data from NLTK's own Gutenberg methods ----
+    print("Loading Gutenberg data via NLTK corpus methods …")
+    gb_nltk_sents = [list(s) for s in gutenberg.sents()]
+    gb_nltk_words = list(gutenberg.words())
+    print(f"  NLTK sents(): {len(gb_nltk_sents)} sentences")
+    print(f"  NLTK words(): {len(gb_nltk_words)} words")
+ 
+    # ---- 2b. Data from raw() fed through our own tokenizer ----
+    print("Loading Gutenberg data via raw() + our tokenizer …")
+    gb_raw_text   = gutenberg.raw()
+    gb_our_sents  = tok_nltk_g.string2sentences(gb_raw_text)
+    gb_our_words  = tok_nltk_g.word_tokenize(gb_raw_text)
+    print(f"  our sents: {len(gb_our_sents)} sentences")
+    print(f"  our words: {len(gb_our_words)} words")
+ 
+    gb_model_count = 0
+    for n in [2, 3, 4]:
+        for mode in ["sentence", "word"]:
+            for source_name, sents_data, words_data in [
+                ("NLTK Gutenberg methods", gb_nltk_sents, gb_nltk_words),
+                ("raw() + our tokenizer", gb_our_sents,  gb_our_words),
+            ]:
+                gb_model_count += 1
+                data = sents_data if mode == "sentence" else words_data
+                subsection(
+                    f"Gutenberg model {gb_model_count}/12 – "
+                    f"n={n}, mode={mode}, source={source_name}"
+                )
+                print(f"Training … ({len(data)} items)")
+                model = NGramModel(
+                    data,
+                    n=n,
+                    tokenizer=tok_nltk_g,
+                    mode=mode,
+                )
+                demonstrate(model)
+ 
+    section("ALL 24 MODELS DEMONSTRATED – demo.py complete")
+ 
